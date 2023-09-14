@@ -1,32 +1,70 @@
 package com.zkmutechecker;
 
-import androidx.annotation.NonNull;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-@ReactModule(name = ZkmutecheckerModule.NAME)
 public class ZkmutecheckerModule extends ReactContextBaseJavaModule {
-  public static final String NAME = "Zkmutechecker";
+    private static final String MODULE_NAME = "Zkmutechecker";
+    private static final String EVENT_NAME = "onMuteModeChange";
 
-  public ZkmutecheckerModule(ReactApplicationContext reactContext) {
-    super(reactContext);
-  }
+    private AudioManager audioManager;
+    private boolean previousValue;
 
-  @Override
-  @NonNull
-  public String getName() {
-    return NAME;
-  }
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            boolean isMute = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT;
+            if (isMute != previousValue) {
+                sendMuteChangeEvent(isMute);
+                previousValue = isMute;
+            }
+        }
+    };
 
+    public ZkmutecheckerModule(ReactApplicationContext reactContext) {
+        super(reactContext);
+        audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
+        previousValue = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT;
 
-  // Example method
-  // See https://reactnative.dev/docs/native-modules-android
-  @ReactMethod
-  public void multiply(double a, double b, Promise promise) {
-    promise.resolve(a * b);
-  }
+        // Регистрируем BroadcastReceiver для отслеживания изменений режима звука
+        IntentFilter filter = new IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION);
+        reactContext.registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public String getName() {
+        return MODULE_NAME;
+    }
+
+    @ReactMethod
+    public void getLastStatus(Promise promise) {
+        try {
+            boolean lastStatus = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT;
+            promise.resolve(lastStatus);
+        } catch (Exception e) {
+            promise.reject("GET_LAST_STATUS_ERROR", e.getMessage());
+        }
+    }
+
+    private void sendMuteChangeEvent(boolean isMute) {
+        ReactApplicationContext reactContext = getReactApplicationContext();
+        if (reactContext.hasActiveCatalystInstance()) {
+            WritableMap params = new WritableNativeMap();
+            params.putBoolean("isMute", isMute);
+            reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(EVENT_NAME, params);
+        }
+    }
 }

@@ -1,6 +1,6 @@
 {
   "name": "react-native-zkmutechecker",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "by Replanz",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -45,14 +45,11 @@
   ],
   "repository": "https://github.com/zcdev02/react-native-zkmutechecker",
   "author": "replanz <dev02@zoo-click.com> (https://github.com/zcdev02)",
-  "license": "MIT",
+  "license": "",
   "bugs": {
     "url": "https://github.com/zcdev02/react-native-zkmutechecker/issues"
   },
   "homepage": "https://github.com/zcdev02/react-native-zkmutechecker#readme",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.2.2",

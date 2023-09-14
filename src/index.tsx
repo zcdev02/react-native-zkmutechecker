@@ -1,22 +1,31 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules } from 'react-native';
+import type { eventCallback, zkMutecheckerType } from './types';
 
-const LINKING_ERROR =
-  `The package 'react-native-zkmutechecker' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+const { Zkmutechecker } = NativeModules;
+const muteModeEventEmitter: NativeEventEmitter = new NativeEventEmitter(
+  Zkmutechecker
+);
 
-const Zkmutechecker = NativeModules.Zkmutechecker
-  ? NativeModules.Zkmutechecker
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+const EVENT_NAME = 'onMuteModeChange';
 
-export function multiply(a: number, b: number): Promise<number> {
-  return Zkmutechecker.multiply(a, b);
-}
+const addMuteModeChangeListener = (callback: eventCallback): void => {
+  muteModeEventEmitter.addListener(EVENT_NAME, callback);
+};
+
+// Получает предыдущее значение, когда пользователь щелкнул беззвучный режим
+const getLastStatus = async (): Promise<boolean> => {
+  try {
+    const previousValue = await Zkmutechecker.getLastStatus();
+    return previousValue;
+  } catch (error) {
+    console.error('Error fetching previous value:', error);
+    return false;
+  }
+};
+
+const zkMuteChecker: zkMutecheckerType = {
+  addMuteModeChangeListener,
+  getLastStatus,
+};
+
+export default zkMuteChecker;

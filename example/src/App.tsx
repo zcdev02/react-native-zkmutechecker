@@ -1,31 +1,40 @@
-import * as React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, Button } from 'react-native';
+import MuteModeChecker from 'react-native-zkmutechecker';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-zkmutechecker';
+const App = () => {
+  const [isMute, setIsMute] = useState(false);
+  const [status, setStatus] = useState<boolean | undefined>(undefined);
 
-export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
-
-  React.useEffect(() => {
-    multiply(3, 7).then(setResult);
+  //TODO: поменять местами true false при переключении беззвучного режима
+  const handleMuteChange = useCallback((mute: boolean) => {
+    setIsMute(mute);
+    console.log('MuteModeChangeListener isMute: ', mute);
   }, []);
 
+  //TODO: поменять местами true false при переключении беззвучного режима
+  const handleGetStatus = async () => {
+    const status = await MuteModeChecker.getLastStatus();
+    setStatus(status);
+    console.log('MuteModeChangeListener CurrentStatus:', status);
+  };
+
+  useEffect(() => {
+    console.log('useEffect isMute:', isMute);
+    MuteModeChecker.addMuteModeChangeListener(handleMuteChange);
+  }, [isMute, handleMuteChange]);
+
   return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
+    <View>
+      <Text style={{ alignSelf: 'center', marginTop: 100 }}>
+        {isMute ? 'Беззвучный режим включен' : 'Беззвучный режим выключен'}
+      </Text>
+      <Button
+        title={status === undefined ? 'Получить статус ' : `${status}`}
+        onPress={handleGetStatus}
+      />
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-});
+export default App;
