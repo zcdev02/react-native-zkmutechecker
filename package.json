@@ -1,6 +1,6 @@
 {
   "name": "react-native-zkmutechecker",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "by Replanz",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
