@@ -24,7 +24,7 @@ public class ZkmutecheckerModule extends ReactContextBaseJavaModule {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            boolean isMute = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT;
+            boolean isMute = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT || audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE;
             if (isMute != previousValue) {
                 sendMuteChangeEvent(isMute);
                 previousValue = isMute;
@@ -35,7 +35,7 @@ public class ZkmutecheckerModule extends ReactContextBaseJavaModule {
     public ZkmutecheckerModule(ReactApplicationContext reactContext) {
         super(reactContext);
         audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
-        previousValue = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT;
+        previousValue = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT || audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE;
 
         // Регистрируем BroadcastReceiver для отслеживания изменений режима звука
         IntentFilter filter = new IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION);
@@ -50,7 +50,7 @@ public class ZkmutecheckerModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getLastStatus(Promise promise) {
         try {
-            boolean lastStatus = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT;
+            boolean lastStatus = audioManager.getRingerMode() == AudioManager.RINGER_MODE_SILENT || audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE;
             promise.resolve(lastStatus);
         } catch (Exception e) {
             promise.reject("GET_LAST_STATUS_ERROR", e.getMessage());
