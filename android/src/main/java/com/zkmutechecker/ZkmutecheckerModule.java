@@ -60,11 +60,9 @@ public class ZkmutecheckerModule extends ReactContextBaseJavaModule {
     private void sendMuteChangeEvent(boolean isMute) {
         ReactApplicationContext reactContext = getReactApplicationContext();
         if (reactContext.hasActiveCatalystInstance()) {
-            WritableMap params = new WritableNativeMap();
-            params.putBoolean("isMute", isMute);
             reactContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(EVENT_NAME, params);
+                .emit(EVENT_NAME, isMute);
         }
     }
 }
